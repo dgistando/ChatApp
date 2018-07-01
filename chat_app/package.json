@@ -1,0 +1,46 @@
+{
+  "name": "chat_app",
+  "version": "0.1.0",
+  "private": true,
+  "dependencies": {
+    "ajv": "^6.5.1",
+    "babel-core": "^6.26.3",
+    "babel-loader": "^7.1.4",
+    "babel-preset-env": "^1.7.0",
+    "babel-preset-react": "^6.24.1",
+    "cors": "^2.8.4",
+    "es6-promise": "^4.2.4",
+    "express": "^4.16.3",
+    "express-graphql": "^0.6.12",
+    "graphql": "^0.13.2",
+    "isomorphic-fetch": "^2.2.1",
+    "mongoose": "^5.1.7",
+    "react": "^16.4.1",
+    "react-dom": "^16.4.1",
+    "react-redux": "^5.0.7",
+    "react-scripts": "1.1.4",
+    "redux": "^4.0.0",
+    "redux-promise": "^0.6.0",
+    "socket.io": "^2.1.1",
+    "socket.io-client": "^2.1.1",
+    "webpack-cli": "^3.0.8"
+  },
+  "scripts": {
+    "start": "webpack-dev-server --port 3000 --hot --host 0.0.0.0",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject",
+    "buidl:prod": "webpack"
+  },
+  "description": "This is a Chat App for Quip",
+  "main": "webpack.config.js",
+  "devDependencies": {
+    "uglifyjs-webpack-plugin": "^1.2.7",
+    "webpack": "^4.12.2",
+    "webpack-dev-middleware": "^3.1.3",
+    "webpack-dev-server": "^3.1.4",
+    "webpack-hot-middleware": "^2.22.2"
+  },
+  "author": "",
+  "license": "ISC"
+}
