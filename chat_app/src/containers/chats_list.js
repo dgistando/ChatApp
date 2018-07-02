@@ -1,30 +1,55 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
-import NewUser from '../containers/new_user_modal';
 
-import {selectChat} from '../actions/index'
+import {selectChat,showModal} from '../actions/index'
 
 import '../index.css'
 
-// MBRC1937
 
 class ChatList extends Component{
     constructor(props){
         super(props);
 
         this.state = {
-            user : null,
-            visible : null
+            visible : null,
+            isOpen : false
         }
     }
 
-    showModal(){
-        if(!this.state.user){
-            //Show the create user modal
-            
+    logout(event){ //I undertsand that this isnt a real logout
+                  //Dont have time to write one
+        event.preventDefault();
+        location.reload();
+    }
+
+    showUserInfo(){
+        if(!this.props.homeInfo.userInfo){
+            return (
+                <button onClick={() => { this.props.showModal('show')
+                                         this.props.showModal('login')
+                                        }} type="button" className="btn btn-raised btn-primary ">Login</button>
+            );
         }else{
-            //show the add chat modal
+            
+            return (
+                <div>
+                    <p className="text-justify font-weight-light" >{this.props.homeInfo.userInfo.handle}#
+                        {this.props.homeInfo.userInfo.id}
+                    </p>
+                    <button onClick={this.logout} type="button" className={"btn btn-raised btn-danger btn-lg"}>Logout</button>
+                </div>
+            );
+        }
+    }
+
+    showChatOrNew(){
+        if(!this.props.homeInfo.userInfo){
+            this.props.showModal('show') //set wether or not to show
+            this.props.showModal('new') //set type of modal to show
+        }else{
+            this.props.showModal('show') //set wether or not to show
+            this.props.showModal('chat') //set type of modal to show
         }
     }
 
@@ -43,18 +68,23 @@ class ChatList extends Component{
         );
     }
 
-    render(){
+    render(){//<button onClick={() => this.props.showModal('show')} type="button" className={"btn btn-raised btn-primary btn-lg"}>New</button>
         return (
-            <div className={"flex-item flex1"}>
 
+            <div className={"flex-item flex1"}>
                 <div>
-                    <button onClick={this.showModal} type="button" className={"btn btn-raised btn-primary btn-lg"}>New</button>{'\t\t'}
+                <button onClick={() => this.showChatOrNew()} type="button" className={"btn btn-raised btn-primary btn-lg"}>New</button>{'\t\t'}
                     <button type="button" className={"btn btn-raised btn-danger btn-lg"}>Delete</button>
                 </div>
 
                 <ul className="list-group">
                     {this.getChats()}
                 </ul>  
+
+                <div className="userInfo">
+                    <h3>User:</h3>
+                    {this.showUserInfo()}
+                </div>
             </div>
         );
     }
@@ -62,11 +92,16 @@ class ChatList extends Component{
 
 
 function matchDispatchToProps(dispatch){
-    return bindActionCreators({selectChat : selectChat}, dispatch)
+    return bindActionCreators({
+        selectChat : selectChat,
+        showModal : showModal
+    }, dispatch)
 }
 
-function mapStatetoProps({Chats}){
-    return {Chats};
+function mapStatetoProps({Chats, homeInfo}){
+    return {Chats,
+        homeInfo : homeInfo
+    };
 }
 
 export default connect(mapStatetoProps, matchDispatchToProps)(ChatList)

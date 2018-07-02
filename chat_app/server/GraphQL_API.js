@@ -201,4 +201,4 @@ app.use('/graphql', require('cors')(), graphqlHTTP({
     pretty : true,
     graphiql : true,
 }));
-app.listen(4000, (err) => console.log('listening ...'));
+app.listen(4000, (err) => console.log('listening ... :4000'));
