@@ -2,10 +2,9 @@ import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {selectChat,showModal} from '../actions/index'
+import {selectChat,showModal, getChats, getMessages} from '../actions/index'
 
 import '../index.css'
-
 
 class ChatList extends Component{
     constructor(props){
@@ -13,8 +12,10 @@ class ChatList extends Component{
 
         this.state = {
             visible : null,
-            isOpen : false
+            isOpen : false    
         }
+
+        this.showUserInfo = this.showUserInfo.bind(this)
     }
 
     logout(event){ //I undertsand that this isnt a real logout
@@ -43,7 +44,7 @@ class ChatList extends Component{
         }
     }
 
-    showChatOrNew(){
+    showChatOrNewModal(){
         if(!this.props.homeInfo.userInfo){
             this.props.showModal('show') //set wether or not to show
             this.props.showModal('new') //set type of modal to show
@@ -53,32 +54,31 @@ class ChatList extends Component{
         }
     }
 
-    getChats(){
-        if(!this.props.Chats){
-            return (<li>No Items yet!!</li>)
-        }
-
-        return ( this.props.Chats.map( Chat =>{
-                return <li
-                    key={Chat.hash}
-                    className={"list-group-item"}
-                    onClick={() => this.props.selectChat(Chat)}
-                >{Chat.name}</li>
-            })
-        );
+    showChats(Chat){
+        
+        return (
+            <li
+                key={Chat.hash}
+                className={"list-group-item list-group-item-action list-group-item-success"}
+                onClick={() => {
+                    this.props.selectChat(Chat)
+                    this.props.getMessages(Chat.hash)
+                }}
+            >{Chat.name}</li>
+        )
     }
 
-    render(){//<button onClick={() => this.props.showModal('show')} type="button" className={"btn btn-raised btn-primary btn-lg"}>New</button>
+    render(){
         return (
 
             <div className={"flex-item flex1"}>
                 <div>
-                <button onClick={() => this.showChatOrNew()} type="button" className={"btn btn-raised btn-primary btn-lg"}>New</button>{'\t\t'}
+                <button onClick={() => this.showChatOrNewModal()} type="button" className={"btn btn-raised btn-primary btn-lg"}>New</button>{'\t\t'}
                     <button type="button" className={"btn btn-raised btn-danger btn-lg"}>Delete</button>
                 </div>
 
                 <ul className="list-group">
-                    {this.getChats()}
+                    {this.props.Chats.map(this.showChats,this)}
                 </ul>  
 
                 <div className="userInfo">
@@ -94,14 +94,19 @@ class ChatList extends Component{
 function matchDispatchToProps(dispatch){
     return bindActionCreators({
         selectChat : selectChat,
-        showModal : showModal
+        showModal : showModal,
+        getChats : getChats,
+        getMessages : getMessages
     }, dispatch)
 }
 
-function mapStatetoProps({Chats, homeInfo}){
+function mapStateToProps({Chats, single_item_reducer}){
+
+    console.log("Chat list update: ",Chats)
+
     return {Chats,
-        homeInfo : homeInfo
+        homeInfo : single_item_reducer
     };
 }
 
-export default connect(mapStatetoProps, matchDispatchToProps)(ChatList)
+export default connect(mapStateToProps, matchDispatchToProps)(ChatList)

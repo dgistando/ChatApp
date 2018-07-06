@@ -18,7 +18,7 @@ var UserSchema = new Schema({
     handle : String,
     id : Number,
     dateJoined : Number, //BSON Date
-    myChats : [Number] //chat hashes
+    myChats : [String] //chat hashes
 }, {collection : 'user'})
 
 /**

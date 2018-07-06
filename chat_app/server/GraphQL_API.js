@@ -119,6 +119,30 @@ var mutationType = new GraphQLObjectType({
             }
         },
 
+        //db.user.update({handle, id}, {$push : {"myChats": chatHash}} )
+        addChatToUser : {
+            type : UsersType,
+            args: {
+                handle : {type : GraphQLString},
+                id: {type : GraphQLInt},
+                chatHash: {type : GraphQLString}
+            },
+            resolve : (_, {handle, id, chatHash}) => {
+                return new Promise((resolve, reject) => {
+                    Users.findOne({handle : handle, id : id}, (err, user) => {                        
+                        if(err) reject(err)
+
+                        user.myChats.push(chatHash);
+                        user.save((err, updatedUser) => {
+                            if(err) reject(err)
+                            
+                            resolve(updatedUser)
+                        })
+                    })
+                })
+            }
+        },
+
         //remove from the chat
         deleteMessage : {
             type: MessageType,
@@ -159,13 +183,27 @@ var queryType = new GraphQLObjectType({
         },
         
         getChat : {
-            type: new GraphQLList(ChatType),
+            type: ChatType,
             args:{
                 hash: {type : GraphQLString}
             },
             resolve : (_, {hash}) =>{
                 return new Promise((resolve, reject) => {
                     Chat.find({hash}, (err, res) => {
+                        err ? reject(err) : resolve(res)
+                    })
+                })
+            }
+        },      
+
+        getChats : {
+            type: new GraphQLList(ChatType),
+            args:{
+                hashes: {type : GraphQLList(GraphQLString)}
+            },
+            resolve : (_, {hashes}) =>{
+                return new Promise((resolve, reject) => {
+                    Chat.find({hash: {$in : hashes}}, (err, res) => {
                         err ? reject(err) : resolve(res)
                     })
                 })

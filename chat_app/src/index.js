@@ -11,8 +11,14 @@ import ReduxPromise from 'redux-promise';
 
 const storeFromMiddleWare = applyMiddleware(ReduxPromise)(createStore)
 
+const store = storeFromMiddleWare(reducers)
+
+// store.subscribe(() =>
+//   console.log(store.getState())
+// )
+
 ReactDOM.render(
-                <Provider store={storeFromMiddleWare(reducers)}>
+                <Provider store={store}>
                 <App />
                 </Provider>, document.getElementById('root'));
 registerServiceWorker();

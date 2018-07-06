@@ -2,11 +2,20 @@ import React, { Component } from 'react';
 import ChatList from '../containers/chats_list';
 import ActiveChat from '../containers/active_chat';
 import Modal from '../containers/modal';
+require("babel-core/register");
+require("babel-polyfill");
 
 import {bindActionCreators} from 'redux';
 import {connect} from 'react-redux';
 
-import {showModal, insertUser,getUser, insertChat} from '../actions/index'
+import {showModal,
+        insertUser,
+        getUser,
+        insertChat,
+        checkUser,
+        getChatsByUser,
+        getChats,
+        selectChat} from '../actions/index'
 
 import '../index.css';
 
@@ -14,12 +23,12 @@ class App extends Component {
 
   constructor(props){
     super(props);
-    this.state = { isOpen: false,
+    this.state = { alertOpened: false,
                     userName : '',
                     name: '',
                     Uid:'',
                     chatName: '' ,
-                    userList : []};
+                    usersList : []};
     this.toggleModal = this.toggleModal.bind(this)
     this.onFormSubmit = this.onFormSubmit.bind(this)
     this.onInputChange = this.onInputChange.bind(this)
@@ -30,6 +39,8 @@ class App extends Component {
   }
 
   showForm(type){
+
+    console.log("modal type == "+ type)
     switch(type){
       case 'login':
         return this.getUser();
@@ -42,15 +53,10 @@ class App extends Component {
 
   onFormSubmit(event){
     event.preventDefault();
-
     var target = event.target.id
 
     console.log("target : "+target)
-    // if(target === 'insertUser'){
-    //   this.props.insertUser(this.state.userName, this.state.name)
-    // }else if(target === 'getUser'){
-    //   this.props.getUser(this.state.userName, this.state.Uid)
-    // }
+    if(event.target.id === 'createChat') this.onInputChange(event)
 
     switch(event.target.id){
       case('insertUser'):
@@ -59,10 +65,12 @@ class App extends Component {
       case('getUser'):
         console.log("GET USER")
         this.props.getUser(this.state.userName, this.state.Uid)
+        this.props.getChatsByUser(this.state.userName,this.state.Uid)
         break;
       case('createChat'):
         console.log("Create Chat")
-        this.props.insertChat(this.state.chatName, this.state.userList)
+        var finalUserList = [this.props.userInfo.handle+"#"+this.props.userInfo.id, ...this.state.usersList]
+        this.props.insertChat(this.state.chatName, finalUserList)
         break;
     }
 
@@ -70,6 +78,7 @@ class App extends Component {
       userName : '',
       name: '',
       Uid:'',
+      chatName: '',
       userList : []
     })
 
@@ -78,11 +87,46 @@ class App extends Component {
 
   onInputChange(event){
 
-    if(event.target.id === 'usersList'){//This means users cant have emptySpace in names
-      event.target.value = event.target.value.replace(' ','').split(',')
+      //check users here
+    if(event.target.id === 'usersList' && 
+       event.target.value[event.target.value.length - 1] === ','){
+
+      var userList = event.target.value.substring(0, event.target.value.length - 1).replaceAll(' ','').split(',')
+
+      console.log(userList)
+
+        var check = 1;
+
+        userList = userList.map(entity => {
+          entity = entity.split('#')
+
+          if(entity.length != 2 || isNaN(entity[1])){
+            alert(`(${entity[0]}) Is in the incorrect format.\n Correct format : <username>#<id number>`)
+            check = null;
+            return;
+          }
+
+          return entity
+        })
+
+        if(check === null)return;    
+
+      
+      //Make the call for the existing users
+      this.props.checkUser(userList);
+
+      this.setState({alertOpened : false})
+    }else if(event.target.id === 'usersList' && this.state.alertOpened == false){   
+        //checking that the user are real
+        if(this.props.userExistProp !== undefined && this.props.userExistProp.length != 0){
+        alert("The following users don't exist:\n"+JSON.stringify(this.props.userExistProp))
+
+        this.setState({alertOpened : true})
+        return;
+      }
     }
 
-    console.log(event.target.value)
+    console.log(event.target.id +"  "+event.target.value)
     this.setState({ [event.target.id] : [event.target.value] })
   }
 
@@ -121,11 +165,12 @@ class App extends Component {
             <label htmlFor="userName" className="bmd-label-floating required">Username</label>
             <input type="text" className="form-control" id="userName" value={this.state.userName} onChange={this.onInputChange}/>
             <span className="bmd-help"> A username is required to use this app.</span>
+            
           </div>
 
           <div className="form-group">
             <label htmlFor="Uid" className="bmd-label-floating required">ID</label>
-            <input type="text" className="form-control" id="Uid" value={this.state.userList} onChange={this.onInputChange}/>
+            <input type="text" className="form-control" id="Uid" value={this.state.Uid} onChange={this.onInputChange}/>
           </div>
 
           <button className="btn btn-default" onClick={this.toggleModal}>Cancel</button>{' '}
@@ -148,7 +193,7 @@ class App extends Component {
 
         <div className="form-group">
           <label htmlFor="usersList" className="bmd-label-floating required">User List (comma separated)</label>
-          <input type="text" className="form-control" id="usersList" value={this.state.Uid} onChange={this.onInputChange}/>
+          <input type="text" className="form-control" id="usersList" value={this.state.usersList} onChange={this.onInputChange}/>
         </div>
 
         <button className="btn btn-default" onClick={this.toggleModal}>Cancel</button>{' '}
@@ -161,7 +206,7 @@ class App extends Component {
   render() {
     return (
       <div id="root">
-        <Modal show={this.props.isModalOpenProp}>
+        <Modal show={this.props.isModalOpen}>
               {this.showForm(this.props.modalTypeProp)}
         </Modal>
         
@@ -179,20 +224,27 @@ function matchDispatchToProps(dispath){
     showModal : showModal,
     insertUser : insertUser,
     getUser : getUser,
-    insertChat : insertChat
+    insertChat : insertChat,
+    checkUser : checkUser,
+    getChatsByUser : getChatsByUser,
+    getChats : getChats,
+    selectChat : selectChat
  }, dispath) 
 }
 
-function mapStatetoProps({isModalOpen, homeInfo}){
-
-  console.log(isModalOpen.modalType)
-
+function mapStatetoProps({single_item_reducer}){
+  //console.log(single_item_reducer)
   return {
-    isModalOpenProp : isModalOpen.isModalOpen,
-    modalTypeProp : isModalOpen.modalType,
-    homeInfo : homeInfo.userInfo
+    isModalOpen : single_item_reducer.isModalOpen,
+    modalTypeProp : single_item_reducer.modalType,
+    userExistProp : single_item_reducer.userExist,
+    userInfo : single_item_reducer.userInfo,
   };
 }
 
+String.prototype.replaceAll = function(search, replacement) {
+  var target = this;
+  return target.split(search).join(replacement);
+};
 
 export default connect(mapStatetoProps, matchDispatchToProps)(App)

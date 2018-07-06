@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 
 import '../index.css'
 
- class Modal extends Component {etr5u5tyrtugnvcmjk       
+ class Modal extends Component {     
 
     render(){
 

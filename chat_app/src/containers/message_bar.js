@@ -1,7 +1,8 @@
 import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
-import {insertMessage} from "../actions/index";
+
+import {insertMessage, getMessages} from "../actions/index";
 
 class MessageBar extends Component{
 
@@ -21,7 +22,12 @@ class MessageBar extends Component{
 
     onFormSubmit(event){
         event.preventDefault();
-        this.props.insertMessage(this.state.term);
+
+        var user = this.props.UserInfo
+        var hash = this.props.Chat[0].hash
+
+        this.props.insertMessage(this.state.term, user.handle+"#"+user.id, hash);
+        this.props.getMessages(hash)
         this.setState({term: ''});
     }
 
@@ -44,8 +50,22 @@ class MessageBar extends Component{
     }
 }
 
+
+
 function mapDispatchToProps(dispatch) {
-    return bindActionCreators({insertMessage}, dispatch);
+    return bindActionCreators({
+        insertMessage,
+        getMessages
+    }, dispatch);
 }
 
-export default connect(null, mapDispatchToProps)(MessageBar);
+function mapStateToProps({single_item_reducer, Messages}){
+
+    return {
+        Chat : single_item_reducer.activeChat,
+        Messages : Messages,
+        UserInfo : single_item_reducer.userInfo
+    };
+}
+
+export default connect(mapStateToProps, mapDispatchToProps)(MessageBar);

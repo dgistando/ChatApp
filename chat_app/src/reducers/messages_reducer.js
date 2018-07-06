@@ -1,7 +1,11 @@
-export default function(){
-    return [
-        {message: 'Hello', timeStamp: 5.0},
-        {message: 'you there', timeStamp: 5.5},
-        {message: 'okay then', timeStamp: 6.0}
-    ]
+import {
+    GET_MESSAGES
+} from '../actions/index'
+
+export default function(state=[], action){   
+     if(action.type === GET_MESSAGES){
+        return [action.payload.data.getMessages, ...state][0];
+    }
+    return state;
 }
+

@@ -25,7 +25,7 @@ UsersType = new GraphQLObjectType({
                 type : GraphQLFloat
             },
             myChats : {
-                type : GraphQLList(GraphQLFloat)
+                type : GraphQLList(GraphQLString)
             }
         }
     }
