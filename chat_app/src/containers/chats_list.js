@@ -102,7 +102,7 @@ function matchDispatchToProps(dispatch){
 
 function mapStateToProps({Chats, single_item_reducer}){
 
-    console.log("Chat list update: ",Chats)
+    //console.log("Chat list update: ",Chats)
 
     return {Chats,
         homeInfo : single_item_reducer

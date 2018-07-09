@@ -64,6 +64,23 @@
   bottom: 0;
   right: 0;
   width: 69%;
+  padding: 5px;
+}
+
+.message-list{
+  overflow: auto;
+  max-height: 95vh;
+}
+
+.messages {
+  margin: 5px;
+  word-wrap: normal;
+}
+
+.message-text{
+  word-wrap: break-word;
+  overflow: hidden;
+  text-align: left;
 }
 
 .backdrop {
