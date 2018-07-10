@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {selectChat,showModal, getChats, getMessages} from '../actions/index'
+import {selectChat, showModal, getChats, getMessages} from '../actions/index'
 
 import '../index.css'
 
@@ -29,7 +29,9 @@ class ChatList extends Component{
             return (
                 <button onClick={() => { this.props.showModal('show')
                                          this.props.showModal('login')
-                                        }} type="button" className="btn btn-raised btn-primary ">Login</button>
+                                        }}
+                        type="button"
+                        className="btn btn-raised btn-primary ">Login</button>
             );
         }else{
             
@@ -49,8 +51,8 @@ class ChatList extends Component{
             this.props.showModal('show') //set wether or not to show
             this.props.showModal('new') //set type of modal to show
         }else{
-            this.props.showModal('show') //set wether or not to show
-            this.props.showModal('chat') //set type of modal to show
+            this.props.showModal('show') 
+            this.props.showModal('chat') 
         }
     }
 

@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {insertMessage, getMessages} from "../actions/index";
+import {insertMessage, getMessages, socket} from "../actions/index";
 
 class MessageBar extends Component{
 
@@ -13,6 +13,10 @@ class MessageBar extends Component{
 
         this.onInputChange = this.onInputChange.bind(this);
         this.onFormSubmit = this.onFormSubmit.bind(this);
+
+        socket.on('broadcast_chat', (message_obj) => {
+            this.props.getMessages(message_obj)
+        })
     }
 
     onInputChange(event){
@@ -27,9 +31,11 @@ class MessageBar extends Component{
         var hash = this.props.Chat[0].hash
 
         this.props.insertMessage(this.state.term, user.handle+"#"+user.id, hash);
-        this.props.getMessages(hash)
+        //this.props.getMessages(hash)
         this.setState({term: ''});
     }
+
+    
 
     render(){
         return(

@@ -6,13 +6,7 @@ const io = require('socket.io')(http);
 
 var connections = [] //purely the number of connections. online or not
 var activeUsers = [] //users online at the moment
-var activeChats = [] //Chats with users in them
-var chat = { //This is structure that will be in oactive chats
-    name : '',
-    users: [],
-    messages : []
-}
-
+var activeChats = []
 
 // -kepep track of wich users are currently in which chat
 // -save all the messages in a given message but also broadcasting them
@@ -20,6 +14,19 @@ var chat = { //This is structure that will be in oactive chats
 //     to update each users
 //     ::Also just update a set of messages periodically anyway.
 
+//TODO
+/**
+ * fix the way messages are added to the display and RAM. make sure no nested arrays
+ * 
+ * Finish looking through this file and replace all the proper places socket should be used
+ * with the functions in this file.
+ * 
+ * add a time interval to this file when a users join a chat to write data periodically
+ *  >add a mongodb connection to this file.
+ *  >add proper functions to the API if nessecary.(maybe not have graphQL endpoint here. (This part api doesnt/shouldnt
+ *  be public so you can do direct db writes/reads. The sockets API will be provied as part fo the chatApp API when available)
+ * 
+ */
 
 App.get('/', (req, res) => {
     res.sendfile('../public/index.html');
@@ -33,7 +40,7 @@ io.on('connection', (socket) => {
     socket.on('go online', (userName) => {
         activeUsers.push({
             userName : userName,
-            connection : socket
+            socket : socket
         })
     })   
     socket.on('go offline', (userName) => {
@@ -41,32 +48,55 @@ io.on('connection', (socket) => {
     })
 
 
-    socket.on('enter chat', (chatName, userName) => {
-        var chat;
-        if(!(chat = activeChats.find(entity => entity.nam === chatName))){//if chat dnot here already
-            //I should do a db opperation here to check the users allowed.
-            //Then check this username against those return null if no pass
+    socket.on('enter chat', (chatHash, userName) => {
+        socket.join(chatHash)
+        //tell everyone that userName joined
+        io.to(chatHash).emit('server_message', `${userName} joined the chat`)
+
+        if(!(chat = activeChats.find(entity => entity.hash === chatHash))){//if chats not here already
             activeChats.push({
-                name : chatName,
-                users : [].push(userName),
-                messages : []
+                hash: chatHash,
+                messages: []
             })
-        }else{
-            //should be a reference to object
-            chat
         }
     })
-    socket.on('leave chat', (userName) => {
+    socket.on('leave chat', (chatHash, userName) => {
+        socket.leave(chatHash)
+        //tell everyone that userName left chat
+        io.to(chatHash).emit('server_message', `${userName} left the chat`)
 
+        //checking to see if namespace is empty
+        io.of(chatHash).clients((err, clients) => {
+            if(err) throw err
+
+            if(clients.length === 0){
+                activeChats.splice(activeChats.map(entity => entity.chatHash).indexOf(chatHash), 1)
+            }
+        })
     })
 
 
+    //Message contains who is sending it and the time sent
+    socket.on('send message', (content, userName, chatHash) => {
 
-    socket.on('send message', (msg) =>{
-        io.emit('message', msg)
+        var message_obj = {
+            data : {
+                getMessages: [{
+                    content:    content,
+                    userName:   userName,
+                    time:       new Date().getTime(),
+                    chatHash:   chatHash
+                }]
+            }
+        }
+
+        io.to(chatHash).emit('broadcast_chat', message_obj)
+
+        var chat;
+        if(!(chat = activeChats.find(entity => entity.hash === chatHash))){
+            chat.messages.push(message_obj)
+        }
     })
-
-
 
 
 

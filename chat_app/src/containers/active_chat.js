@@ -5,6 +5,7 @@ import MessageBar from './message_bar'
 
 import {getMessages} from '../actions/index'
 
+
 import '../index.css'
 
 class ActiveChat extends Component {

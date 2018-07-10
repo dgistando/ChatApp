@@ -1,6 +1,7 @@
 import fetch from 'isomorphic-fetch';
 
 const ROOT_URL = 'http://localhost:4000/graphql?'
+export const socket = require('socket.io-client')('http://localhost:8080/')
 
 export const SELECTED_CHAT = 'SELECTED_CHAT'
 export const INSERT_USER = 'INSERT_USER'
@@ -213,6 +214,9 @@ export function getChatsByUser(handle, id){
 export function insertMessage(content, userName, chatHash){
     //userName = username#id
 
+    socket.emit('send message', content, userName, chatHash)
+
+    /*
     var insertMessagesQuery = `
         mutation{
             insertMessage(content:\"${content}\" userName:\"${userName}\" chatHash:\"${chatHash}\"){
@@ -222,11 +226,18 @@ export function insertMessage(content, userName, chatHash){
                 chatHash
             }
         }
-    `
+    `*/
 
     return {
         type : INSERT_MESSAGE,
         payload : getData(insertMessagesQuery).then(Response => Response.json())
+    }
+}
+
+export function receiveMessage(message_obj){
+    return {
+        type : GET_MESSAGES,
+        payload : message_obj
     }
 }
 
