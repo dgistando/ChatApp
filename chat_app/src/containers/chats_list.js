@@ -2,7 +2,9 @@ import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {selectChat, showModal, getChats, getMessages} from '../actions/index'
+import {clearMessages, selectChat, showModal, getChats, getMessages, socket} from '../actions/index'
+
+import {DropdownButton, MenuItem} from 'react-bootstrap';
 
 import '../index.css'
 
@@ -12,10 +14,38 @@ class ChatList extends Component{
 
         this.state = {
             visible : null,
-            isOpen : false    
+            isOpen : false,
+            status : 'btn-secondary',
+            name : 'Offline'  
         }
 
         this.showUserInfo = this.showUserInfo.bind(this)
+        this.onStatusSelect = this.onStatusSelect.bind(this)
+    }
+
+    onStatusSelect(eventKey){
+        var userName = `${this.props.homeInfo.userInfo.handle}#${this.props.homeInfo.userInfo.id}`
+        var status;
+
+        switch(eventKey){
+            case 'Online':
+                socket.emit('go online', userName)
+                status = 'btn-primary'; 
+                break;
+            case 'Away':
+                socket.emit('go away', userName)
+                status = 'btn-warning';
+                 break;
+            case 'Offline':
+                socket.emit('go offline', userName)
+                status = 'btn-secondary'; 
+                break;
+        }
+
+        this.setState({
+            status : status,
+            name : eventKey
+        })
     }
 
     logout(event){ //I undertsand that this isnt a real logout
@@ -33,12 +63,28 @@ class ChatList extends Component{
                         type="button"
                         className="btn btn-raised btn-primary ">Login</button>
             );
+
         }else{
             
             return (
                 <div>
-                    <p className="text-justify font-weight-light" >{this.props.homeInfo.userInfo.handle}#
-                        {this.props.homeInfo.userInfo.id}
+                    Status:
+                    <DropdownButton
+                        className = {"dropup btn btn-raised "+this.state.status}
+                        title={this.state.name}
+                        key={1}
+                        id={`dropup-basic-${1}`}
+                        dropup={true}
+                        >
+                        <MenuItem className="list-group-item dropdown-item" eventKey="Online" onSelect={this.onStatusSelect}>Online</MenuItem>
+                        <MenuItem className="list-group-item dropdown-item" eventKey="Away" onSelect={this.onStatusSelect}>Away</MenuItem>
+                        <MenuItem className="list-group-item dropdown-item" eventKey="Offline" onSelect={this.onStatusSelect}>Offline</MenuItem>
+                    </DropdownButton>
+
+                    <p className="text-justify font-weight-light" > 
+                     User:
+                       {this.props.homeInfo.userInfo.handle}#
+                       {this.props.homeInfo.userInfo.id}
                     </p>
                     <button onClick={this.logout} type="button" className={"btn btn-raised btn-danger btn-lg"}>Logout</button>
                 </div>
@@ -57,14 +103,21 @@ class ChatList extends Component{
     }
 
     showChats(Chat){
-        
+        var userName = `${this.props.homeInfo.userInfo.handle}#${this.props.homeInfo.userInfo.id}`
+        var ActiveChat = this.props.homeInfo.activeChat;
+
         return (
             <li
                 key={Chat.hash}
                 className={"list-group-item list-group-item-action list-group-item-success"}
                 onClick={() => {
-                    this.props.selectChat(Chat)
+                    if(ActiveChat){
+                         socket.emit('leave chat', ActiveChat.hash, userName) //be sure to leave the chat if in one.
+                         this.props.clearMessages()
+                    }
+                    this.props.selectChat(Chat, userName)
                     this.props.getMessages(Chat.hash)
+                    
                 }}
             >{Chat.name}</li>
         )
@@ -79,12 +132,11 @@ class ChatList extends Component{
                     <button type="button" className={"btn btn-raised btn-danger btn-lg"}>Delete</button>
                 </div>
 
-                <ul className="list-group">
+                <ul className="list-group chat-list">
                     {this.props.Chats.map(this.showChats,this)}
                 </ul>  
 
-                <div className="userInfo">
-                    <h3>User:</h3>
+                <div className="userInfo ">
                     {this.showUserInfo()}
                 </div>
             </div>
@@ -98,7 +150,8 @@ function matchDispatchToProps(dispatch){
         selectChat : selectChat,
         showModal : showModal,
         getChats : getChats,
-        getMessages : getMessages
+        getMessages : getMessages,
+        clearMessages : clearMessages
     }, dispatch)
 }
 

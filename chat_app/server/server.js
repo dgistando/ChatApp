@@ -5,8 +5,10 @@ const io = require('socket.io')(http);
 // -make a lisr of connections on the server side.
 
 var connections = [] //purely the number of connections. online or not
-var activeUsers = [] //users online at the moment
+var serverActiveUsers = [] //users online at the moment
+var publicActiveUsers = []
 var activeChats = []
+
 
 // -kepep track of wich users are currently in which chat
 // -save all the messages in a given message but also broadcasting them
@@ -35,23 +37,72 @@ App.get('/', (req, res) => {
 io.on('connection', (socket) => {
     //When a user connects this scope is up for grabs by the user
     console.log('user connected!!')
+    
     connections.push(socket);
 
+    for(var conn of connections){
+        console.log('SERVER', 'connections :', conn.handshake.address +" "+ conn.handshake.time)
+    }
+
     socket.on('go online', (userName) => {
-        activeUsers.push({
+        serverActiveUsers.push({
             userName : userName,
+            status : "online",
             socket : socket
         })
+        
+        publicActiveUsers.push({
+            userName : userName,
+            status : "online"
+        })
+        io.sockets.emit('users online', publicActiveUsers)
+    })   
+    socket.on('go away', (userName) => {
+        var user
+        if((user = serverActiveUsers.find(entity => entity.userName === userName))){
+            //user Already in list
+            user.status = "away"
+        }else{
+            serverActiveUsers.push({
+                userName : userName,
+                status : "away",
+                socket : socket
+            })
+
+            publicActiveUsers.push({
+                userName : userName,
+                status : "away"
+            })
+        }
+        io.sockets.emit('users online', publicActiveUsers)
     })   
     socket.on('go offline', (userName) => {
-        activeUsers.splice(indexOf({userName, socket}, 1))
+        var user
+        if((user = serverActiveUsers.find(entity => entity.userName === userName))){
+            var index = serverActiveUsers.indexOf(user);
+            serverActiveUsers.splice(index, 1)
+            publicActiveUsers.splice(index, 1)
+        }
+        io.sockets.emit('users online', publicActiveUsers)
     })
 
 
     socket.on('enter chat', (chatHash, userName) => {
         socket.join(chatHash)
+
+        var message_obj = {
+            data : {
+                getMessages: [{
+                    content:    `${userName}'s here`,
+                    userName:   'ChatApp',
+                    time:       new Date().getTime().toString(),
+                    chatHash:   chatHash
+                }]
+            }
+        }
+
         //tell everyone that userName joined
-        io.to(chatHash).emit('server_message', `${userName} joined the chat`)
+        //io.to(chatHash).emit('broadcast_chat', message_obj)
 
         if(!(chat = activeChats.find(entity => entity.hash === chatHash))){//if chats not here already
             activeChats.push({
@@ -63,7 +114,17 @@ io.on('connection', (socket) => {
     socket.on('leave chat', (chatHash, userName) => {
         socket.leave(chatHash)
         //tell everyone that userName left chat
-        io.to(chatHash).emit('server_message', `${userName} left the chat`)
+        var message_obj = {
+            data : {
+                getMessages: [{
+                    content:    `${userName} left the chat`,
+                    userName:   'ChatApp',
+                    time:       new Date().getTime(),
+                    chatHash:   chatHash
+                }]
+            }
+        }
+        io.to(chatHash).emit('broadcast_chat', message_obj)
 
         //checking to see if namespace is empty
         io.of(chatHash).clients((err, clients) => {
@@ -82,8 +143,8 @@ io.on('connection', (socket) => {
         var message_obj = {
             data : {
                 getMessages: [{
-                    content:    content,
                     userName:   userName,
+                    content:    content,
                     time:       new Date().getTime(),
                     chatHash:   chatHash
                 }]
@@ -93,9 +154,11 @@ io.on('connection', (socket) => {
         io.to(chatHash).emit('broadcast_chat', message_obj)
 
         var chat;
-        if(!(chat = activeChats.find(entity => entity.hash === chatHash))){
-            chat.messages.push(message_obj)
+        if((chat = activeChats.find(entity => entity.hash === chatHash))){
+            chat.messages.push(message_obj.data.getMessages[0])
         }
+
+        console.log(chat.messages)
     })
 
 
@@ -103,7 +166,10 @@ io.on('connection', (socket) => {
 
     socket.on('disconnect', () =>{//This function is called only on disconnect
         console.log('user disconnected.')
-            connections.splice(connectinos.indexOf(socket), 1)
+        var index = connections.indexOf(socket)
+
+        if(index > -1) connections.splice(index, 1)
+        io.sockets.emit('users online', publicActiveUsers)
     })
 })
 

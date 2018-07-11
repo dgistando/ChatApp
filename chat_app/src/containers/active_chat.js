@@ -21,6 +21,9 @@ class ActiveChat extends Component {
     }
 
     showMessages(message){
+
+        //console.log(message)
+
         return (<li 
             key={message.userName + message.time.toString()}
             className={"list-group-item list-group-item-action list-group-item-success messages"}
@@ -33,6 +36,7 @@ class ActiveChat extends Component {
 
     render(){
         
+
         return (
             <div className={"flex-item flex2"}>
 

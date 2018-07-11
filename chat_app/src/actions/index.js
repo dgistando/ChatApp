@@ -147,6 +147,8 @@ function addChatToUser(handle, id, chatHash){
 
 export function getMessages(chatHash){
 
+    console.log('get Messages', chatHash)
+
     var getMessagesQuery = `
         query{
             getMessages(chatHash:\"${chatHash}\"){
@@ -229,26 +231,32 @@ export function insertMessage(content, userName, chatHash){
     `*/
 
     return {
-        type : INSERT_MESSAGE,
-        payload : getData(insertMessagesQuery).then(Response => Response.json())
+        type : 'nothing',
+        payload : undefined//getData(insertMessagesQuery).then(Response => Response.json())
     }
 }
 
 export function receiveMessage(message_obj){
+
+    console.log("receiveMessage", message_obj)
+
     return {
         type : GET_MESSAGES,
         payload : message_obj
     }
 }
 
-export function selectChat(ChatSelected){
+export function selectChat(ChatSelected, userName){
     
     //console.log("Chat SELECTED: ",ChatSelected)
+    socket.emit('enter chat', ChatSelected.hash, userName)
 
     return {
         type: SELECTED_CHAT,
         payload: getChats(ChatSelected.hash).payload
     }
+
+    //Should probably also call force update of db on all users in chat to make sure there is the same data
 }
 
 //modulized a fuunction to get specific info from the reducer
@@ -259,6 +267,12 @@ export function showModal(type){
     }
 }
 
+export function clearMessages(){
+    return {
+        type: "clear messages",
+        payload : []
+    }
+}
 
 function getData(query){
     return(

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import ChatList from '../containers/chats_list';
 import ActiveChat from '../containers/active_chat';
+import OnlineUsers from '../containers/online_users';
 import Modal from '../containers/modal';
 require("babel-core/register");
 require("babel-polyfill");
@@ -15,7 +16,8 @@ import {showModal,
         checkUser,
         getChatsByUser,
         getChats,
-        selectChat} from '../actions/index'
+        selectChat,
+        socket} from '../actions/index'
 
 import '../index.css';
 
@@ -28,10 +30,16 @@ class App extends Component {
                     name: '',
                     Uid:'',
                     chatName: '' ,
-                    usersList : []};
+                    usersList : [],
+                    usersOnline : undefined};
     this.toggleModal = this.toggleModal.bind(this)
     this.onFormSubmit = this.onFormSubmit.bind(this)
     this.onInputChange = this.onInputChange.bind(this)
+
+    socket.on('users online', (userList) => {
+      console.log('updating online users', userList)
+      this.setState({usersOnline : userList})
+    })
   }
 
   toggleModal(){
@@ -213,6 +221,7 @@ class App extends Component {
         <ul className="flex-container">
           <ChatList />
           <ActiveChat />
+          <OnlineUsers onlineUsers={this.state.usersOnline}/>
         </ul>
       </div>
     );

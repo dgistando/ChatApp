@@ -56,20 +56,27 @@
   
 }
 
-.flex1 { flex: 1 1 30%; }
-.flex2 { flex: 1 2 70%; } 
+.flex1 { flex: 1 1 20%; }
+.flex2 { flex: 1 2 72%; } 
+.flex3 { flex: 1 2 8%; } 
 
 .search-bar {
   position: fixed;
   bottom: 0;
-  right: 0;
-  width: 69%;
+  /*right: 0;*/
+  width: 71%;
   padding: 5px;
+  align-content: center;
 }
 
 .message-list{
   overflow: auto;
   max-height: 95vh;
+}
+
+.chat-list{
+  overflow: auto;
+  max-height: 67vh;
 }
 
 .messages {
@@ -116,5 +123,6 @@
   left: 0;
   position: absolute;
   display: flex;
-  padding: 10px
+  padding: 10px;
+  font-size: 2vh;
 }
