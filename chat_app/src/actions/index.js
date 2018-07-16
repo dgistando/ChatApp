@@ -11,6 +11,7 @@ export const INSERT_CHAT = 'INSERT_CHAT'
 export const GET_CHATS = 'GET_CHATS'
 export const GET_MESSAGES = 'GET_MESSAGES'
 export const INSERT_MESSAGE = 'INSERT_MESSAGE'
+export const DELETE_CHAT = 'DELETE_CHAT'
 
 export function insertUser(userName, Name){
     //console.log("insertUser: " + userName)
@@ -119,6 +120,8 @@ export function insertChat(name, userList){
                 return savePayload.then(json => {
                             console.log(json)
                         return getChats(json.data.addChatToUser.myChats).payload
+                }).catch(e => {
+                    console.log('something went wrong index.js:insertChat', e)
                 })
         })
     };
@@ -179,9 +182,7 @@ export function getChats(hashes){
             }
             
         `
-
-        //console.log("getChatsQuery:",getChatsQuery)
-
+        
         return {
           type : GET_CHATS,
           payload :  getData(getChatsQuery).then(Response => Response.json())
@@ -213,23 +214,26 @@ export function getChatsByUser(handle, id){
    }
 }
 
-export function insertMessage(content, userName, chatHash){
-    //userName = username#id
-
-    socket.emit('send message', content, userName, chatHash)
-
-    /*
-    var insertMessagesQuery = `
+export function deleteChat(hash){
+    var deleteChatQuery = `
         mutation{
-            insertMessage(content:\"${content}\" userName:\"${userName}\" chatHash:\"${chatHash}\"){
-                content
-                userName
-                time
-                chatHash
+            deleteChat(hash:${JSON.stringify(hash)}){
+                name
+                img
+                lastActive
+                hash
             }
         }
-    `*/
+    `
 
+    return {
+        type : DELETE_CHAT,
+        payload : getData(deleteChatQuery).then(Response => Response.json())
+    }
+}
+
+export function insertMessage(content, userName, chatHash){
+    socket.emit('send message', content, userName, chatHash)
     return {
         type : 'nothing',
         payload : undefined//getData(insertMessagesQuery).then(Response => Response.json())

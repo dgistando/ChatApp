@@ -8,7 +8,7 @@ class OnlineUsers extends Component{
     showUsers(user){
         return (
             <li 
-            key={user.UserName}
+            key={user.userName+user.status}
             className={"list-group-item list-group-item-action list-group-item-success"}
             >
                 {user.userName +" "+ user.status}
@@ -18,13 +18,14 @@ class OnlineUsers extends Component{
 
     render(){
         if(!this.props.onlineUsers){
-            return <div className={'flex-item flex3'}>Not logged in..</div>
+            return <div className={'flex-item flex3'}>No one here.</div>
         }
 
         if(this.props.onlineUsers.length === 0){
-            return <div className={'flex-item flex3'}>You're the only one online</div>
+            return <div className={'flex-item flex3'}>No one here.</div>
         }
 
+        console.log(this.props.onlineUsers)
         return (
             <div className={'flex-item flex3'}>
                 <ul className="list-group chat-list">

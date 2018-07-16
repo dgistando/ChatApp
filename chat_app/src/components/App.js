@@ -44,6 +44,14 @@ class App extends Component {
 
   toggleModal(){
     this.props.showModal('hide')
+    
+    this.setState({
+      userName : '',
+      name: '',
+      Uid:'',
+      chatName: '',
+      userList : []
+    })
   }
 
   showForm(type){
@@ -82,13 +90,13 @@ class App extends Component {
         break;
     }
 
-    this.setState({
-      userName : '',
-      name: '',
-      Uid:'',
-      chatName: '',
-      userList : []
-    })
+    // this.setState({
+    //   userName : '',
+    //   name: '',
+    //   Uid:'',
+    //   chatName: '',
+    //   userList : []
+    // })
 
     this.toggleModal();
   }

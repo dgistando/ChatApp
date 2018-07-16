@@ -42,6 +42,7 @@ export default function(state = {}, action){
 
         //CHAT RELATED
         case SELECTED_CHAT:
+                console.log(action.payload.data.getChats)
              state.activeChat = action.payload.data.getChats; break;
         case INSERT_CHAT:
             console.log(action.payload.data.insertChat)

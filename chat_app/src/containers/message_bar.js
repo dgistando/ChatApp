@@ -2,7 +2,7 @@ import React, {Component} from 'react';
 import {connect} from 'react-redux';
 import {bindActionCreators} from 'redux';
 
-import {insertMessage, getMessages, socket, receiveMessage} from "../actions/index";
+import {insertMessage, getMessages, socket, receiveMessage, clearMessages} from "../actions/index";
 
 class MessageBar extends Component{
 
@@ -14,8 +14,14 @@ class MessageBar extends Component{
         this.onInputChange = this.onInputChange.bind(this);
         this.onFormSubmit = this.onFormSubmit.bind(this);
 
+        //Socket events
         socket.on('broadcast_chat', (message_obj) => {
             this.props.receiveMessage(message_obj)
+        })
+
+        socket.on('force update', () => {
+            this.props.clearMessages()
+            this.props.getMessages(this.props.Chat[0].hash)
         })
     }
 
@@ -62,7 +68,8 @@ function mapDispatchToProps(dispatch) {
     return bindActionCreators({
         insertMessage,
         getMessages,
-        receiveMessage
+        receiveMessage,
+        clearMessages
     }, dispatch);
 }
 

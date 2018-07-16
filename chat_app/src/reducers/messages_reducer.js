@@ -7,7 +7,7 @@ export default function(state=[], action){
             console.log('final arr', action.payload.data.getMessages.concat(state))
             return state.concat(action.payload.data.getMessages)
     }else if(action.type === 'clear messages'){
-        return []
+        state = []
     }
     return state;
 }

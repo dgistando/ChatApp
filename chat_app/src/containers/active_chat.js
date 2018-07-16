@@ -36,6 +36,11 @@ class ActiveChat extends Component {
 
     render(){
         
+        if(!this.props.Chat){  
+            return(
+                <div className={"flex-item flex2"}>No Chat selected!</div> 
+            );
+        }
 
         return (
             <div className={"flex-item flex2"}>

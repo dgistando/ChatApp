@@ -28,16 +28,6 @@ const MessageType = require('./GQL_Types').MessagType
 
 var ObjectId = require('./schemas').ObjectID
 
-const ResultType = new GraphQLObjectType({ //Delete This
-    name : 'WriteResult',
-    fields : () => {
-        return {
-            nInserted : {type: GraphQLInt}
-        }
-    }
-})
-
-
 var mutationType = new GraphQLObjectType({
     name : 'Muation',
     fields : () => ({
@@ -158,6 +148,30 @@ var mutationType = new GraphQLObjectType({
                 })
             }
         },
+
+        //Gets rid chat and messages
+        deleteChat : {
+            type: ChatType,
+            args:{
+                hash : {type : GraphQLString}
+            },
+            
+            resolve : (_ , {hash}) => {
+                return new Promise((resolve, reject) => {
+                    Chat.findOneAndRemove({hash}, (err, res) => {
+                        // err ? reject(err) : resolve(res)
+                        if(err) reject(err)
+
+                        Message.remove({chatHash : hash}, (err, res) => {
+                            if(err) reject(err)
+                            console.log('remove', res)
+                        })
+
+                        resolve(res)
+                    })
+                })
+            }
+        }
 
     })
 })
